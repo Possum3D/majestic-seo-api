@@ -24,7 +24,6 @@ class MajesticAPIService
     protected function setUpEndpoint($domain)
     {
         $this->endpoint = sprintf("http://%s/api/", $domain);
-        var_dump($this->endpoint);
     }
 
     public function setResponseType($type)

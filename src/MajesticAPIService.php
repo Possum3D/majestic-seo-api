@@ -1,4 +1,6 @@
-<?php namespace Possum3D\Majestic;
+<?php
+
+namespace Nticaric\Majestic;
 
 use GuzzleHttp\Client;
 

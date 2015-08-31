@@ -1,18 +1,28 @@
-<?php namespace Nticaric\Majestic;
+<?php namespace Possum3D\Majestic;
 
 use GuzzleHttp\Client;
 
-class MajesticAPIService {
+class MajesticAPIService
+{
 
-    private $endpoint = "http://api.majestic.com/api/";
-    
-    public function __construct($apiKey, $sandbox = false)
+    private $endpoint;
+    private $apiKey;
+    private $client;
+    private $configurations = [];
+
+    public function __construct($apiKey, $domain)
     {
-        if($sandbox == true) {
-            $this->endpoint = "http://developer.majestic.com/api";
-        }
+        $this->setupEndpoint($domain);
+
         $this->responseType = "json";
         $this->apiKey = $apiKey;
+        $this->client = new Client;
+    }
+
+    protected function setUpEndpoint($domain)
+    {
+        $this->endpoint = sprintf("http://%s/api/", $domain);
+        var_dump($this->endpoint);
     }
 
     public function setResponseType($type)
@@ -22,19 +32,29 @@ class MajesticAPIService {
 
     public function executeCommand($command, $params = array())
     {
-        $client = new Client;
 
         $params["cmd"]         = $command;
         $params["app_api_key"] = $this->apiKey;
 
-        return $client->get($this->endpoint ."/". $this->responseType, [
+        if (isset($this->configs[$command])) {
+            $params = array_merge($this->configs[$command], $params);
+        }
+
+        return $this->client->get($this->endpoint . $this->responseType, [
             'query' => $params
         ]);
     }
 
-    public function __call($name, $arguments)
+    public function configure($fnName, array $params)
+    {
+        $fnName = ucfirst($fnName);
+        $this->configs[$fnName] = $params;
+    }
+
+    public function __call($name, array $arguments)
     {
         $command = ucfirst($name);
+
         if(isset($arguments[1])) {
             $params  = $arguments[1];
         } else {
@@ -51,6 +71,7 @@ class MajesticAPIService {
             }
             $params['items'] = $counter;
         }
+
         return $this->executeCommand($command, $params);
     }
 }
